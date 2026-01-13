@@ -36,7 +36,7 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* --- Сетка формы (Имитация жесткой таблицы) --- */
+        /* --- Сетка формы (Основная) --- */
         .form-table { display: grid; grid-template-columns: 140px 220px 20px 130px 1fr; grid-gap: 4px; align-items: center; margin-bottom: 4px; }
 
         /* Стили лейблов */
@@ -84,10 +84,22 @@
         .btn-retro:hover { background: linear-gradient(to bottom, #FFF 0%, #E8E8E8 100%); }
         .btn-retro:active { background: linear-gradient(to bottom, #D8D8D8 0%, #F8F8F8 100%); border-style: inset; }
 
-        /* Иконки на кнопках (Unicode для простоты) */
+        /* Иконки на кнопках */
         .btn-save::before { content: "💾"; position: absolute; left: 5px; top: 3px; }
         .btn-close::before { content: "✖"; position: absolute; left: 7px; top: 3px; color: red; }
         .btn-sync::before { content: "🔄"; position: absolute; left: 5px; top: 3px; color: blue; }
+
+        /* --- Новые стили для Tab 2 (Сведения о заявителе/ЦОУ) --- */
+        .fieldset-header {
+            font-weight: bold; color: #000; margin: 15px 0 5px 0; border-bottom: 1px solid #A0A0A0; padding-bottom: 2px;
+            font-size: 11px;
+        }
+        .long-input { width: 100%; font-family: monospace; letter-spacing: -0.5px; }
+
+        /* Специфические сетки для Tab 2 */
+        .grid-tab2 { display: grid; grid-template-columns: 200px 1fr; gap: 4px; align-items: center; margin-bottom: 4px; }
+        .grid-tab2-multi { display: grid; grid-template-columns: 200px 150px 10px 200px 1fr; gap: 4px; align-items: center; margin-bottom: 4px; }
+        .grid-contacts { display: grid; grid-template-columns: 80px 1fr 80px 1fr 80px 1fr; gap: 4px; align-items: center; }
 
     </style>
 </head>
@@ -192,14 +204,65 @@
             </div>
 
         </div> <div id="tab2" class="tab-content">
-             <div class="form-table">
-                <div class="form-label">ФИО Заявителя:</div>
-                <div><input type="text" id="applicant_name" style="width: 300px;"></div>
-             </div>
-              <div class="form-table">
-                <div class="form-label">Телефон:</div>
-                <div><input type="text" id="applicant_phone"></div>
-             </div>
+            <div style="padding: 5px;">
+
+                <div class="grid-tab2">
+                    <div class="form-label">20. Вид сообщения</div>
+                    <select id="msg_type" style="background: #EBEBE4;"> <option value=""></option>
+                        <option value="08 Сообщение ЦОУ">08 Сообщение ЦОУ</option>
+                    </select>
+                </div>
+
+                <div class="grid-tab2">
+                    <div class="form-label">20.1 Сведения</div>
+                    <select id="confidentiality">
+                        <option value="не конфиденциально, не секретно">не конфиденциально, не секретно</option>
+                    </select>
+                </div>
+
+                <div class="grid-tab2">
+                    <div class="form-label">22. Название ЦОУ</div>
+                    <div class="input-with-icon">
+                        <input type="text" id="cou_name">
+                        <span class="field-icon">▼</span>
+                    </div>
+                </div>
+
+                <div class="grid-tab2-multi">
+                    <div class="form-label">22.1 Номер регистрации в ЦОУ</div>
+                    <input type="text" id="cou_reg_number" class="long-input">
+
+                    <div></div> <div class="form-label" style="text-align: right;">22.1. Дата-время регистрации в ЦОУ</div>
+                    <div class="input-with-icon">
+                        <input type="text" id="cou_reg_date">
+                        <span class="field-icon">📅</span>
+                    </div>
+                </div>
+
+                <div class="grid-tab2">
+                    <div class="form-label">22.2 Должность сотрудника ЦОУ</div>
+                    <input type="text" id="cou_position">
+                </div>
+
+                <div class="grid-tab2">
+                    <div class="form-label">22.3 Фамилия И.О. сотрудника ЦОУ</div>
+                    <input type="text" id="cou_employee">
+                </div>
+
+                <div class="fieldset-header">Контактные данные</div>
+
+                <div class="grid-contacts">
+                    <div class="form-label">25. Город. тел</div>
+                    <input type="text" id="city_phone">
+
+                    <div class="form-label">25. Моб.тел</div>
+                    <input type="text" id="mobile_phone" style="font-weight: bold;">
+
+                    <div class="form-label">25. e-mail</div>
+                    <input type="text" id="email">
+                </div>
+
+            </div>
         </div>
 
     </div>
@@ -216,7 +279,7 @@
 </div>
 
 <script>
-    // Логика переключения табов (обновленная)
+    // Логика переключения табов
     function switchTab(tabId, element) {
         // Скрыть все контенты
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -228,7 +291,7 @@
         element.classList.add('active');
     }
 
-    // Логика получения данных (Осталась прежней)
+    // Логика получения данных (Обновленная для всех полей)
     async function fetchData() {
         const statusSpan = document.getElementById('sync-status');
         statusSpan.innerText = "Загрузка данных...";
@@ -239,27 +302,37 @@
             const data = await response.json();
 
             if (data.found) {
+                // --- Вкладка 1 (Основные данные) ---
                 document.getElementById('kui_number').value = data.kui_number || '';
                 document.getElementById('reg_organ').value = data.reg_organ || '';
                 document.getElementById('event_description').value = data.event_description || '';
-                // В реальной системе тут нужен парсер даты, пока просто вставляем строку
                 document.getElementById('reg_date').value = data.reg_date || '';
 
-                // Второй таб
-                document.getElementById('applicant_name').value = data.applicant_name || '';
-                document.getElementById('applicant_phone').value = data.applicant_phone || '';
-
-                // Селект
+                // Выбор района
                 const districtSelect = document.getElementById('district');
                  for(let i=0; i<districtSelect.options.length; i++){
-                    // Простая проверка на совпадение текста
                     if(districtSelect.options[i].text.includes(data.district)){
                         districtSelect.selectedIndex = i;
                         break;
                     }
                 }
 
-                statusSpan.innerText = "Данные успешно загружены.";
+                // --- Вкладка 2 (Новые поля ЦОУ) ---
+                if (data.msg_type) document.getElementById('msg_type').value = data.msg_type;
+                if (data.confidentiality) document.getElementById('confidentiality').value = data.confidentiality;
+
+                document.getElementById('cou_name').value = data.cou_name || '';
+                document.getElementById('cou_reg_number').value = data.cou_reg_number || '';
+                document.getElementById('cou_reg_date').value = data.cou_reg_date || '';
+                document.getElementById('cou_position').value = data.cou_position || '';
+                document.getElementById('cou_employee').value = data.cou_employee || '';
+
+                // --- Контакты ---
+                document.getElementById('city_phone').value = data.city_phone || '';
+                document.getElementById('mobile_phone').value = data.mobile_phone || '';
+                document.getElementById('email').value = data.email || '';
+
+                statusSpan.innerText = "Данные успешно загружены (Все вкладки).";
                  statusSpan.style.color = "green";
             } else {
                 statusSpan.innerText = "Нет данных в БД.";
