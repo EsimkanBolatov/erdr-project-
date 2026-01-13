@@ -83,10 +83,10 @@
         <div id="tab1" class="tab-content active">
             <div class="form-table">
                 <div class="form-label"><span class="required">*</span>1. Номер КУИ</div>
-                <div class="input-with-icon">
-                     <input type="text" id="kui_number">
-                     <span class="field-icon">🔍</span>
-                </div>
+                    <div class="input-with-icon">
+                         <input type="text" id="kui_number">
+                         <span class="field-icon" onclick="searchByKui()" style="cursor: pointer;">🔍</span>
+                    </div>
                 <div></div>
                 <div class="form-label"><span class="required">*</span>1. Дата время регистрации</div>
                 <div class="input-with-icon" style="width: 130px;">
@@ -235,9 +235,44 @@
         element.classList.add('active');
     }
 
+    // --- Функция поиска по нажатию на лупу ---
+    async function searchByKui() {
+        const kuiInput = document.getElementById('kui_number').value;
+        const statusSpan = document.getElementById('sync-status');
+
+        if (!kuiInput) {
+            alert("Пожалуйста, введите номер КУИ для поиска.");
+            return;
+        }
+
+        statusSpan.innerText = "Поиск по КУИ: " + kuiInput + "...";
+        statusSpan.style.color = "blue";
+
+        try {
+            // Вызываем новый endpoint, который мы добавили в main.py
+            const response = await fetch(`/api/internal/search?kui=${encodeURIComponent(kuiInput)}`);
+            const data = await response.json();
+
+            if (data.found) {
+                fillFormData(data); // Заполняем форму
+                statusSpan.innerText = "Запись найдена и загружена.";
+                statusSpan.style.color = "green";
+            } else {
+                statusSpan.innerText = "Запись с таким КУИ не найдена.";
+                statusSpan.style.color = "red";
+                alert("Запись не найдена!");
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            statusSpan.innerText = "Ошибка соединения при поиске.";
+            statusSpan.style.color = "red";
+        }
+    }
+
+    // --- Старая функция (Загрузить тест), теперь использует общую логику ---
     async function fetchData() {
         const statusSpan = document.getElementById('sync-status');
-        statusSpan.innerText = "Загрузка данных...";
+        statusSpan.innerText = "Загрузка последней записи...";
         statusSpan.style.color = "blue";
 
         try {
@@ -245,64 +280,67 @@
             const data = await response.json();
 
             if (data.found) {
-                // --- Вкладка 1: Основные ---
-                document.getElementById('kui_number').value = data.kui_number || '';
-                document.getElementById('reg_organ').value = data.reg_organ || '';
-                document.getElementById('event_description').value = data.event_description || '';
-                document.getElementById('reg_date').value = data.reg_date || '';
-
-                // --- Вкладка 1: Дополнительные (НОВЫЕ) ---
-                document.getElementById('military_unit').value = data.military_unit || '';
-                document.getElementById('coupon_number').value = data.coupon_number || '';
-                document.getElementById('coupon_date').value = data.coupon_date || '';
-
-                // --- Вкладка 1: Списки ---
-                // (Примитивная логика: если пришло значение, ставим его в value,
-                // если такого value нет в option - визуально может не выбраться, но данные придут)
-                if(data.field_5_1) document.getElementById('field_5_1').value = data.field_5_1;
-                if(data.field_5_2) document.getElementById('field_5_2').value = data.field_5_2;
-                if(data.field_5_3) document.getElementById('field_5_3').value = data.field_5_3;
-                if(data.field_5_4) document.getElementById('field_5_4').value = data.field_5_4;
-                if(data.field_5_5) document.getElementById('field_5_5').value = data.field_5_5;
-                if(data.field_5_6) document.getElementById('field_5_6').value = data.field_5_6;
-                if(data.field_5_7) document.getElementById('field_5_7').value = data.field_5_7;
-
-                // Район
-                const districtSelect = document.getElementById('district');
-                 for(let i=0; i<districtSelect.options.length; i++){
-                    if(districtSelect.options[i].text.includes(data.district)){
-                        districtSelect.selectedIndex = i;
-                        break;
-                    }
-                }
-
-                // --- Вкладка 2: ЦОУ ---
-                if (data.msg_type) document.getElementById('msg_type').value = data.msg_type;
-                if (data.confidentiality) document.getElementById('confidentiality').value = data.confidentiality;
-                document.getElementById('cou_name').value = data.cou_name || '';
-                document.getElementById('cou_reg_number').value = data.cou_reg_number || '';
-                document.getElementById('cou_reg_date').value = data.cou_reg_date || '';
-                document.getElementById('cou_position').value = data.cou_position || '';
-                document.getElementById('cou_employee').value = data.cou_employee || '';
-
-                // --- Контакты ---
-                document.getElementById('city_phone').value = data.city_phone || '';
-                document.getElementById('mobile_phone').value = data.mobile_phone || '';
-                document.getElementById('email').value = data.email || '';
-
+                fillFormData(data);
                 statusSpan.innerText = "Данные успешно загружены.";
-                 statusSpan.style.color = "green";
+                statusSpan.style.color = "green";
             } else {
                 statusSpan.innerText = "Нет данных в БД.";
-                 statusSpan.style.color = "red";
+                statusSpan.style.color = "red";
             }
         } catch (error) {
             console.error('Ошибка:', error);
             statusSpan.innerText = "Ошибка соединения.";
-             statusSpan.style.color = "red";
+            statusSpan.style.color = "red";
         }
     }
-</script>
 
+    // --- Вспомогательная функция заполнения полей (чтобы не дублировать код) ---
+    function fillFormData(data) {
+        // --- Вкладка 1: Основные ---
+        document.getElementById('kui_number').value = data.kui_number || '';
+        document.getElementById('reg_organ').value = data.reg_organ || '';
+        document.getElementById('event_description').value = data.event_description || '';
+        document.getElementById('reg_date').value = data.reg_date || '';
+
+        // --- Вкладка 1: Дополнительные ---
+        document.getElementById('military_unit').value = data.military_unit || '';
+        document.getElementById('coupon_number').value = data.coupon_number || '';
+        document.getElementById('coupon_date').value = data.coupon_date || '';
+
+        // --- Вкладка 1: Списки ---
+        if(data.field_5_1) document.getElementById('field_5_1').value = data.field_5_1;
+        if(data.field_5_2) document.getElementById('field_5_2').value = data.field_5_2;
+        if(data.field_5_3) document.getElementById('field_5_3').value = data.field_5_3;
+        if(data.field_5_4) document.getElementById('field_5_4').value = data.field_5_4;
+        if(data.field_5_5) document.getElementById('field_5_5').value = data.field_5_5;
+        if(data.field_5_6) document.getElementById('field_5_6').value = data.field_5_6;
+        if(data.field_5_7) document.getElementById('field_5_7').value = data.field_5_7;
+
+        // Район (выбор из списка)
+        const districtSelect = document.getElementById('district');
+        // Сброс выбора перед поиском
+        districtSelect.value = "";
+        for(let i=0; i<districtSelect.options.length; i++){
+            if(data.district && districtSelect.options[i].text.includes(data.district)){
+                districtSelect.selectedIndex = i;
+                break;
+            }
+        }
+
+        // --- Вкладка 2: ЦОУ ---
+        if (data.msg_type) document.getElementById('msg_type').value = data.msg_type;
+        if (data.confidentiality) document.getElementById('confidentiality').value = data.confidentiality;
+        document.getElementById('cou_name').value = data.cou_name || '';
+        document.getElementById('cou_reg_number').value = data.cou_reg_number || '';
+        document.getElementById('cou_reg_date').value = data.cou_reg_date || '';
+        document.getElementById('cou_position').value = data.cou_position || '';
+        document.getElementById('cou_employee').value = data.cou_employee || '';
+
+        // --- Контакты ---
+        document.getElementById('city_phone').value = data.city_phone || '';
+        document.getElementById('mobile_phone').value = data.mobile_phone || '';
+        document.getElementById('email').value = data.email || '';
+    }
+</script>
 </body>
 </html>

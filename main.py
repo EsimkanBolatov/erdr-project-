@@ -134,6 +134,30 @@ def get_latest(db: Session = Depends(get_db)):
     }
 
 
+@app.get("/api/internal/get_latest")
+def get_latest(db: Session = Depends(get_db)):
+    latest = db.query(Registration).order_by(Registration.id.desc()).first()
+    if not latest: return {"found": False}
+    return {
+        "found": True,
+        **latest.__dict__
+    }
+
+
+# --- ДОБАВИТЬ ЭТОТ БЛОК ---
+@app.get("/api/internal/search")
+def search_by_kui(kui: str, db: Session = Depends(get_db)):
+    # Ищем запись, где поле kui_number совпадает с переданным
+    record = db.query(Registration).filter(Registration.kui_number == kui).first()
+
+    if not record:
+        return {"found": False}
+
+    return {
+        "found": True,
+        **record.__dict__
+    }
+
 if __name__ == "__main__":
     import uvicorn
 
