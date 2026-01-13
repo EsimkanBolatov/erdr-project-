@@ -19,36 +19,46 @@ class Registration(Base):
     __tablename__ = "registrations"
 
     id = Column(Integer, primary_key=True, index=True)
-    # Вкладка 1
+
+    # --- Вкладка 1: Основные поля ---
     kui_number = Column(String, unique=True, index=True)
     reg_organ = Column(String)
     district = Column(String)
     reg_date = Column(String)
     event_description = Column(Text)
 
-    # Вкладка 2 (Новые поля по скриншоту)
-    msg_type = Column(String, nullable=True)  # 20. Вид сообщения
-    confidentiality = Column(String, nullable=True)  # 20.1 Сведения
-    cou_name = Column(String, nullable=True)  # 22. Название ЦОУ
-    cou_reg_number = Column(String, nullable=True)  # 22.1 Номер регистрации в ЦОУ
-    cou_reg_date = Column(String, nullable=True)  # 22.1 Дата-время в ЦОУ
-    cou_position = Column(String, nullable=True)  # 22.2 Должность
-    cou_employee = Column(String, nullable=True)  # 22.3 Фамилия сотрудника
+    # --- Вкладка 1: Дополнительные поля (которые раньше не работали) ---
+    military_unit = Column(String, nullable=True)  # 3.1 Номер в/части
+    coupon_number = Column(String, nullable=True)  # 4. Номер талона
+    coupon_date = Column(String, nullable=True)  # 4. Дата талона
 
-    city_phone = Column(String, nullable=True)  # 25. Город тел
-    mobile_phone = Column(String, nullable=True)  # 25. Моб тел
-    email = Column(String, nullable=True)  # 25. e-mail
+    # Нижние списки (5.1 - 5.7)
+    field_5_1 = Column(String, nullable=True)  # Сообщение
+    field_5_2 = Column(String, nullable=True)  # Зарегистрировано по рез.
+    field_5_3 = Column(String, nullable=True)  # Связано с
+    field_5_4 = Column(String, nullable=True)  # Предпринимательство
+    field_5_5 = Column(String, nullable=True)  # Инвестиции
+    field_5_6 = Column(String, nullable=True)  # Интернет-мошенничество
+    field_5_7 = Column(String, nullable=True)  # Признак мошенничества
 
-    # Старые поля (оставим для совместимости, если нужны)
-    applicant_name = Column(String, nullable=True)
-    applicant_phone = Column(String, nullable=True)
-    applicant_city = Column(String, nullable=True)
+    # --- Вкладка 2: Данные заявителя/ЦОУ ---
+    msg_type = Column(String, nullable=True)
+    confidentiality = Column(String, nullable=True)
+    cou_name = Column(String, nullable=True)
+    cou_reg_number = Column(String, nullable=True)
+    cou_reg_date = Column(String, nullable=True)
+    cou_position = Column(String, nullable=True)
+    cou_employee = Column(String, nullable=True)
+
+    city_phone = Column(String, nullable=True)
+    mobile_phone = Column(String, nullable=True)
+    email = Column(String, nullable=True)
 
 
 Base.metadata.create_all(bind=engine)
 
 
-# --- Pydantic схема (Данные со скриншота для теста) ---
+# --- Pydantic схема (Для загрузки через API) ---
 class RegistrationSchema(BaseModel):
     # Вкладка 1
     kui_number: str = Field(..., example="263100030000001")
@@ -57,7 +67,20 @@ class RegistrationSchema(BaseModel):
     reg_date: str = Field(..., example="13.01.2026 16:33")
     event_description: str = Field(..., example="Банк остановил транзакцию...")
 
-    # Вкладка 2 (Точь-в-точь как на фото)
+    # Новые поля для Вкладки 1
+    military_unit: Optional[str] = Field(None, example="9999")
+    coupon_number: Optional[str] = Field(None, example="AA-123456")
+    coupon_date: Optional[str] = Field(None, example="13.01.2026")
+
+    field_5_1: Optional[str] = Field(None, example="против собственности")
+    field_5_2: Optional[str] = Field(None, example="")
+    field_5_3: Optional[str] = Field(None, example="Нет")
+    field_5_4: Optional[str] = Field(None, example="Нет")
+    field_5_5: Optional[str] = Field(None, example="Нет")
+    field_5_6: Optional[str] = Field(None, example="Да")
+    field_5_7: Optional[str] = Field(None, example="Нет")
+
+    # Вкладка 2
     msg_type: str = Field(..., example="08 Сообщение ЦОУ")
     confidentiality: str = Field(..., example="не конфиденциально, не секретно")
     cou_name: str = Field(..., example="ЦОУ г.Алматы")
@@ -91,7 +114,6 @@ def read_root(request: Request):
 def receive_data(data: RegistrationSchema, db: Session = Depends(get_db)):
     existing = db.query(Registration).filter(Registration.kui_number == data.kui_number).first()
 
-    # Если запись есть, удалим старую для теста (чтобы обновить все поля)
     if existing:
         db.delete(existing)
         db.commit()
@@ -108,7 +130,7 @@ def get_latest(db: Session = Depends(get_db)):
     if not latest: return {"found": False}
     return {
         "found": True,
-        **latest.__dict__  # Распаковываем все поля
+        **latest.__dict__
     }
 
 

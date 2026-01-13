@@ -4,19 +4,12 @@
     <meta charset="UTF-8">
     <title>ЕРДР - Регистрация в КУИ</title>
     <style>
-        /* --- Общий сброс и шрифты --- */
+        /* CSS остался без изменений (тот же, что и был) */
         body, html { margin: 0; padding: 0; height: 100%; font-family: Tahoma, Arial, sans-serif; font-size: 11px; background-color: #F0F0F0; overflow: hidden; }
         * { box-sizing: border-box; }
-
-        /* --- Основной контейнер --- */
         .main-window { display: flex; flex-direction: column; height: 100vh; border: 1px solid #ACA899; background: #F9F9F9; }
-
-        /* --- Верхняя панель вкладок (Tab Strip) --- */
         .tab-strip-container {
-            background: linear-gradient(to bottom, #F6F6F6 0%, #E4E4F3 100%);
-            border-bottom: 1px solid #999999;
-            padding: 4px 2px 0 2px;
-            height: 26px;
+            background: linear-gradient(to bottom, #F6F6F6 0%, #E4E4F3 100%); border-bottom: 1px solid #999999; padding: 4px 2px 0 2px; height: 26px;
         }
         .tab-strip { list-style: none; margin: 0; padding: 0; display: flex; align-items: flex-end; height: 100%; }
         .tab {
@@ -26,81 +19,49 @@
             border-top-left-radius: 2px; border-top-right-radius: 2px;
         }
         .tab.active {
-            background: #F9F9F9; /* Цвет фона основного контента */
-            font-weight: bold; padding-bottom: 4px; margin-top: -2px; border-top: 2px solid #FF9933; /* Оранжевая полоска сверху */
-            position: relative; z-index: 2;
+            background: #F9F9F9; font-weight: bold; padding-bottom: 4px; margin-top: -2px; border-top: 2px solid #FF9933; position: relative; z-index: 2;
         }
-
-        /* --- Область контента --- */
         .content-container { flex-grow: 1; padding: 10px; overflow-y: auto; background: #F9F9F9; position: relative; z-index: 1; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-
-        /* --- Сетка формы (Основная) --- */
         .form-table { display: grid; grid-template-columns: 140px 220px 20px 130px 1fr; grid-gap: 4px; align-items: center; margin-bottom: 4px; }
-
-        /* Стили лейблов */
         .form-label { text-align: right; padding-right: 5px; color: #333; white-space: nowrap; }
         .required { color: red; margin-right: 2px; }
-
-        /* Стили полей ввода */
         input[type="text"], input[type="datetime-local"], select, textarea {
             width: 100%; font-family: Tahoma, Arial, sans-serif; font-size: 11px; padding: 2px;
-            border: 1px solid #7F9DB9; border-top-color: #ABADB3; border-left-color: #ABADB3; /* Inset look */
-            background-color: #FFF; height: 20px;
+            border: 1px solid #7F9DB9; border-top-color: #ABADB3; border-left-color: #ABADB3; background-color: #FFF; height: 20px;
         }
         input[disabled], input[readonly] { background-color: #F0F0F0; color: #6D6D6D; }
         select { height: 20px; }
-
-        /* Текстовая область на всю ширину */
         .full-width-row { grid-column: 1 / -1; display: flex; align-items: flex-start; height: auto; min-height: 300px;}
         .full-width-row .form-label { width: 140px; flex-shrink: 0; padding-top: 3px; }
         textarea.full-area { flex-grow: 1; height: 350px; resize: none; overflow-y: scroll; }
-
-        /* Строки с выпадающими списками внизу */
         .dropdown-row { display: flex; align-items: center; margin-bottom: 4px; }
         .dropdown-row .form-label { width: 240px; flex-shrink: 0; }
         .dropdown-row select { flex-grow: 1; }
-
-        /* Иконки календаря и поиска (имитация) */
         .input-with-icon { position: relative; display: flex; align-items: center; }
         .input-with-icon input { padding-right: 20px; }
         .field-icon { position: absolute; right: 2px; width: 16px; height: 16px; text-align: center; cursor: pointer; color: #555; font-size: 10px; line-height: 16px; }
-
-        /* --- Нижняя панель действий --- */
         .action-bar-container {
-            height: 35px; background: linear-gradient(to bottom, #F0F0F0 0%, #E0E0E0 100%);
-            border-top: 1px solid #999999; padding: 4px 10px;
-            display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+            height: 35px; background: linear-gradient(to bottom, #F0F0F0 0%, #E0E0E0 100%); border-top: 1px solid #999999; padding: 4px 10px; display: flex; justify-content: flex-end; align-items: center; gap: 10px;
         }
         .system-info { margin-right: auto; color: #666; }
-
-        /* Старые кнопки */
         .btn-retro {
             border: 1px solid #707070; padding: 3px 10px 3px 25px; cursor: pointer; font-size: 11px;
-            background: linear-gradient(to bottom, #F8F8F8 0%, #D8D8D8 100%); border-radius: 2px;
-            position: relative; color: #000;
+            background: linear-gradient(to bottom, #F8F8F8 0%, #D8D8D8 100%); border-radius: 2px; position: relative; color: #000;
         }
         .btn-retro:hover { background: linear-gradient(to bottom, #FFF 0%, #E8E8E8 100%); }
         .btn-retro:active { background: linear-gradient(to bottom, #D8D8D8 0%, #F8F8F8 100%); border-style: inset; }
-
-        /* Иконки на кнопках */
         .btn-save::before { content: "💾"; position: absolute; left: 5px; top: 3px; }
         .btn-close::before { content: "✖"; position: absolute; left: 7px; top: 3px; color: red; }
         .btn-sync::before { content: "🔄"; position: absolute; left: 5px; top: 3px; color: blue; }
 
-        /* --- Новые стили для Tab 2 (Сведения о заявителе/ЦОУ) --- */
-        .fieldset-header {
-            font-weight: bold; color: #000; margin: 15px 0 5px 0; border-bottom: 1px solid #A0A0A0; padding-bottom: 2px;
-            font-size: 11px;
-        }
+        /* Стили для Tab 2 */
+        .fieldset-header { font-weight: bold; color: #000; margin: 15px 0 5px 0; border-bottom: 1px solid #A0A0A0; padding-bottom: 2px; font-size: 11px; }
         .long-input { width: 100%; font-family: monospace; letter-spacing: -0.5px; }
-
-        /* Специфические сетки для Tab 2 */
         .grid-tab2 { display: grid; grid-template-columns: 200px 1fr; gap: 4px; align-items: center; margin-bottom: 4px; }
         .grid-tab2-multi { display: grid; grid-template-columns: 200px 150px 10px 200px 1fr; gap: 4px; align-items: center; margin-bottom: 4px; }
         .grid-contacts { display: grid; grid-template-columns: 80px 1fr 80px 1fr 80px 1fr; gap: 4px; align-items: center; }
-
     </style>
 </head>
 <body>
@@ -120,14 +81,14 @@
     <div class="content-container">
 
         <div id="tab1" class="tab-content active">
-
             <div class="form-table">
                 <div class="form-label"><span class="required">*</span>1. Номер КУИ</div>
                 <div class="input-with-icon">
                      <input type="text" id="kui_number">
                      <span class="field-icon">🔍</span>
                 </div>
-                <div></div> <div class="form-label"><span class="required">*</span>1. Дата время регистрации</div>
+                <div></div>
+                <div class="form-label"><span class="required">*</span>1. Дата время регистрации</div>
                 <div class="input-with-icon" style="width: 130px;">
                     <input type="text" id="reg_date" placeholder="ДД.ММ.ГГГГ ЧЧ:ММ">
                     <span class="field-icon">📅</span>
@@ -152,16 +113,13 @@
                  <div></div> <div></div> <div></div>
 
                   <div class="form-label">3.1. Номер в/части</div>
-                 <div><input type="text"></div>
-                 <div></div> <div></div> <div></div>
+                 <div><input type="text" id="military_unit"></div> <div></div> <div></div> <div></div>
 
                   <div class="form-label">4. Номер талона о принятии заявления</div>
-                 <div><input type="text"></div>
-                 <div></div>
+                 <div><input type="text" id="coupon_number"></div> <div></div>
                   <div class="form-label">4. Дата талона</div>
                   <div class="input-with-icon" style="width: 130px;">
-                    <input type="text" disabled>
-                    <span class="field-icon">📅</span>
+                    <input type="text" id="coupon_date" disabled> <span class="field-icon">📅</span>
                 </div>
             </div>
 
@@ -176,50 +134,49 @@
 
             <div class="dropdown-row">
                 <div class="form-label"><span class="required">*</span>5.1. Сообщение:</div>
-                <select><option>против собственности</option></select>
+                <select id="field_5_1"><option value="против собственности">против собственности</option></select>
             </div>
             <div class="dropdown-row">
                 <div class="form-label">5.2. Зарегистрировано по результатам:</div>
-                 <select disabled><option></option></select>
+                 <select id="field_5_2" disabled><option></option></select>
             </div>
              <div class="dropdown-row">
                 <div class="form-label">5.3. Связано с:</div>
-                 <select><option>Нет</option></select>
+                 <select id="field_5_3"><option value="Нет">Нет</option></select>
             </div>
             <div class="dropdown-row">
                 <div class="form-label"><span class="required">*</span>5.4. В сфере предпринимательской деятельности:</div>
-                 <select><option>Нет</option></select>
+                 <select id="field_5_4"><option value="Нет">Нет</option></select>
             </div>
              <div class="dropdown-row">
                 <div class="form-label"><span class="required">*</span>5.5. В сфере инвестиционной деятельности:</div>
-                 <select><option>Нет</option></select>
+                 <select id="field_5_5"><option value="Нет">Нет</option></select>
             </div>
              <div class="dropdown-row">
                 <div class="form-label"><span class="required">*</span>5.6. Интернет-мошенничество:</div>
-                 <select><option>Да</option><option>Нет</option></select>
+                 <select id="field_5_6"><option value="Да">Да</option><option value="Нет">Нет</option></select>
             </div>
              <div class="dropdown-row">
                 <div class="form-label"><span class="required">*</span>5.7. Признак мошенничества:</div>
-                 <select><option>Нет</option></select>
+                 <select id="field_5_7"><option value="Нет">Нет</option></select>
             </div>
+        </div>
 
-        </div> <div id="tab2" class="tab-content">
+        <div id="tab2" class="tab-content">
             <div style="padding: 5px;">
-
                 <div class="grid-tab2">
                     <div class="form-label">20. Вид сообщения</div>
-                    <select id="msg_type" style="background: #EBEBE4;"> <option value=""></option>
+                    <select id="msg_type" style="background: #EBEBE4;">
+                        <option value=""></option>
                         <option value="08 Сообщение ЦОУ">08 Сообщение ЦОУ</option>
                     </select>
                 </div>
-
                 <div class="grid-tab2">
                     <div class="form-label">20.1 Сведения</div>
                     <select id="confidentiality">
                         <option value="не конфиденциально, не секретно">не конфиденциально, не секретно</option>
                     </select>
                 </div>
-
                 <div class="grid-tab2">
                     <div class="form-label">22. Название ЦОУ</div>
                     <div class="input-with-icon">
@@ -227,41 +184,33 @@
                         <span class="field-icon">▼</span>
                     </div>
                 </div>
-
                 <div class="grid-tab2-multi">
                     <div class="form-label">22.1 Номер регистрации в ЦОУ</div>
                     <input type="text" id="cou_reg_number" class="long-input">
-
-                    <div></div> <div class="form-label" style="text-align: right;">22.1. Дата-время регистрации в ЦОУ</div>
+                    <div></div>
+                    <div class="form-label" style="text-align: right;">22.1. Дата-время регистрации в ЦОУ</div>
                     <div class="input-with-icon">
                         <input type="text" id="cou_reg_date">
                         <span class="field-icon">📅</span>
                     </div>
                 </div>
-
                 <div class="grid-tab2">
                     <div class="form-label">22.2 Должность сотрудника ЦОУ</div>
                     <input type="text" id="cou_position">
                 </div>
-
                 <div class="grid-tab2">
                     <div class="form-label">22.3 Фамилия И.О. сотрудника ЦОУ</div>
                     <input type="text" id="cou_employee">
                 </div>
-
                 <div class="fieldset-header">Контактные данные</div>
-
                 <div class="grid-contacts">
                     <div class="form-label">25. Город. тел</div>
                     <input type="text" id="city_phone">
-
                     <div class="form-label">25. Моб.тел</div>
                     <input type="text" id="mobile_phone" style="font-weight: bold;">
-
                     <div class="form-label">25. e-mail</div>
                     <input type="text" id="email">
                 </div>
-
             </div>
         </div>
 
@@ -279,19 +228,13 @@
 </div>
 
 <script>
-    // Логика переключения табов
     function switchTab(tabId, element) {
-        // Скрыть все контенты
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        // Деактивировать все табы
         document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-
-        // Активировать выбранный
         document.getElementById(tabId).classList.add('active');
         element.classList.add('active');
     }
 
-    // Логика получения данных (Обновленная для всех полей)
     async function fetchData() {
         const statusSpan = document.getElementById('sync-status');
         statusSpan.innerText = "Загрузка данных...";
@@ -302,13 +245,29 @@
             const data = await response.json();
 
             if (data.found) {
-                // --- Вкладка 1 (Основные данные) ---
+                // --- Вкладка 1: Основные ---
                 document.getElementById('kui_number').value = data.kui_number || '';
                 document.getElementById('reg_organ').value = data.reg_organ || '';
                 document.getElementById('event_description').value = data.event_description || '';
                 document.getElementById('reg_date').value = data.reg_date || '';
 
-                // Выбор района
+                // --- Вкладка 1: Дополнительные (НОВЫЕ) ---
+                document.getElementById('military_unit').value = data.military_unit || '';
+                document.getElementById('coupon_number').value = data.coupon_number || '';
+                document.getElementById('coupon_date').value = data.coupon_date || '';
+
+                // --- Вкладка 1: Списки ---
+                // (Примитивная логика: если пришло значение, ставим его в value,
+                // если такого value нет в option - визуально может не выбраться, но данные придут)
+                if(data.field_5_1) document.getElementById('field_5_1').value = data.field_5_1;
+                if(data.field_5_2) document.getElementById('field_5_2').value = data.field_5_2;
+                if(data.field_5_3) document.getElementById('field_5_3').value = data.field_5_3;
+                if(data.field_5_4) document.getElementById('field_5_4').value = data.field_5_4;
+                if(data.field_5_5) document.getElementById('field_5_5').value = data.field_5_5;
+                if(data.field_5_6) document.getElementById('field_5_6').value = data.field_5_6;
+                if(data.field_5_7) document.getElementById('field_5_7').value = data.field_5_7;
+
+                // Район
                 const districtSelect = document.getElementById('district');
                  for(let i=0; i<districtSelect.options.length; i++){
                     if(districtSelect.options[i].text.includes(data.district)){
@@ -317,10 +276,9 @@
                     }
                 }
 
-                // --- Вкладка 2 (Новые поля ЦОУ) ---
+                // --- Вкладка 2: ЦОУ ---
                 if (data.msg_type) document.getElementById('msg_type').value = data.msg_type;
                 if (data.confidentiality) document.getElementById('confidentiality').value = data.confidentiality;
-
                 document.getElementById('cou_name').value = data.cou_name || '';
                 document.getElementById('cou_reg_number').value = data.cou_reg_number || '';
                 document.getElementById('cou_reg_date').value = data.cou_reg_date || '';
@@ -332,7 +290,7 @@
                 document.getElementById('mobile_phone').value = data.mobile_phone || '';
                 document.getElementById('email').value = data.email || '';
 
-                statusSpan.innerText = "Данные успешно загружены (Все вкладки).";
+                statusSpan.innerText = "Данные успешно загружены.";
                  statusSpan.style.color = "green";
             } else {
                 statusSpan.innerText = "Нет данных в БД.";
