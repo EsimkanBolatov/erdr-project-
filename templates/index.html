@@ -168,9 +168,11 @@
             <div class="dropdown-row">
                 <div class="form-label"><span class="required">*</span>6. Запись аудио разговора:</div>
                 <div class="input-with-icon" style="flex-grow: 1;">
-                    <input type="text" id="audio_record" placeholder="Прикрепите файл...">
-                    <span class="field-icon">📎</span>
+                    <input type="text" id="audio_record" placeholder="Файл отсутствует" readonly>
+
+                    <span class="field-icon" onclick="playAudio()" title="Прослушать запись" style="cursor: pointer; font-size: 14px;">📎</span>
                 </div>
+                <audio id="hidden_player" style="display: none;"></audio>
             </div>
         </div>
 
@@ -369,6 +371,35 @@
         document.getElementById('mobile_phone').value = data.mobile_phone || '';
         document.getElementById('email').value = data.email || '';
     }
+
+    // --- Функция воспроизведения аудио по клику на скрепку ---
+    function playAudio() {
+        const filename = document.getElementById('audio_record').value;
+        const player = document.getElementById('hidden_player');
+
+        // Если поле пустое, ничего не делаем
+        if (!filename) {
+            alert("Аудиозапись не прикреплена к этому делу.");
+            return;
+        }
+
+        // Останавливаем, если уже что-то играет
+        player.pause();
+
+        // Указываем путь к файлу (сервер main.py раздает папку static)
+        player.src = "/static/audio/" + filename;
+
+        // Запускаем воспроизведение
+        player.play()
+            .then(() => {
+                console.log("Воспроизведение: " + filename);
+            })
+            .catch(error => {
+                console.error("Ошибка:", error);
+                alert("Файл не найден или формат не поддерживается.\nПроверьте, лежит ли файл '" + filename + "' в папке static/audio проекта.");
+            });
+    }
+
 </script>
 </body>
 </html>
