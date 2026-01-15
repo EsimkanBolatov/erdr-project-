@@ -1,18 +1,18 @@
 # main.py
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, Request, Depends, HTTPException, UploadFile, File
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel, Field
 from typing import Optional
+from fastapi.staticfiles import StaticFiles
 
 # --- Настройка БД ---
 SQLALCHEMY_DATABASE_URL = "sqlite:///./erdr_database.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
 
 # --- Модель БД ---
 class Registration(Base):
@@ -100,7 +100,8 @@ class RegistrationSchema(BaseModel):
 
 app = FastAPI(title="ERDR Simulator")
 templates = Jinja2Templates(directory="templates")
-
+os.makedirs("static/audio", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 def get_db():
     db = SessionLocal()
@@ -162,6 +163,17 @@ def search_by_kui(kui: str, db: Session = Depends(get_db)):
         "found": True,
         **record.__dict__
     }
+
+
+@app.post("/api/external/upload_audio")
+def upload_audio_file(file: UploadFile = File(...)):
+    # Сохраняем файл в папку static/audio
+    file_location = f"static/audio/{file.filename}"
+    with open(file_location, "wb+") as file_object:
+        shutil.copyfileobj(file.file, file_object)
+
+    # Возвращаем имя файла, чтобы клиент мог сохранить его в JSON (в поле audio_record)
+    return {"info": "File saved", "filename": file.filename, "url": f"/static/audio/{file.filename}"}
 
 if __name__ == "__main__":
     import uvicorn
