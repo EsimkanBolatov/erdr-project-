@@ -68,6 +68,7 @@ class RegistrationSchema(BaseModel):
     reg_organ: str = Field(..., example="19310003")
     district: str = Field(..., example="Заводской район")
     reg_date: str = Field(..., example="13.01.2026 16:33")
+    operator_conf_date: Optional[str] = Field(None, example="13.01.2026 17:00")
     event_description: str = Field(..., example="Банк остановил транзакцию...")
 
     # Новые поля для Вкладки 1
@@ -82,6 +83,7 @@ class RegistrationSchema(BaseModel):
     field_5_5: Optional[str] = Field(None, example="Нет")
     field_5_6: Optional[str] = Field(None, example="Да")
     field_5_7: Optional[str] = Field(None, example="Нет")
+    audio_record: Optional[str] = Field(None, example="record_123.mp3") #Поле в схеме
 
     # Вкладка 2
     msg_type: str = Field(..., example="08 Сообщение ЦОУ")
