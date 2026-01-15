@@ -307,14 +307,13 @@
     }
 
     // --- Вспомогательная функция заполнения полей (чтобы не дублировать код) ---
-    function fillFormData(data) {
+   function fillFormData(data) {
         // --- Вкладка 1: Основные ---
         document.getElementById('kui_number').value = data.kui_number || '';
         document.getElementById('reg_organ').value = data.reg_organ || '';
         document.getElementById('event_description').value = data.event_description || '';
         document.getElementById('reg_date').value = data.reg_date || '';
         document.getElementById('operator_conf_date').value = data.operator_conf_date || '';
-        document.getElementById('audio_record').value = data.audio_record || '';
 
         // --- Вкладка 1: Дополнительные ---
         document.getElementById('military_unit').value = data.military_unit || '';
@@ -330,10 +329,25 @@
         if(data.field_5_6) document.getElementById('field_5_6').value = data.field_5_6;
         if(data.field_5_7) document.getElementById('field_5_7').value = data.field_5_7;
 
-        // Район (выбор из списка)
+        // --- [НОВОЕ] Логика для аудио (Текстовое поле + Плеер) ---
+        const audioInput = document.getElementById('audio_record');
+        const audioPlayer = document.getElementById('audio_player');
+
+        // 1. Заполняем поле именем файла
+        audioInput.value = data.audio_record || '';
+
+        // 2. Если имя файла есть, включаем плеер
+        if (data.audio_record) {
+            audioPlayer.src = "/static/audio/" + data.audio_record; // Путь к файлу
+            audioPlayer.style.display = "block"; // Показываем плеер
+        } else {
+            audioPlayer.src = "";
+            audioPlayer.style.display = "none"; // Скрываем плеер
+        }
+
+        // --- Район (выбор из списка) ---
         const districtSelect = document.getElementById('district');
-        // Сброс выбора перед поиском
-        districtSelect.value = "";
+        districtSelect.value = ""; // Сброс
         for(let i=0; i<districtSelect.options.length; i++){
             if(data.district && districtSelect.options[i].text.includes(data.district)){
                 districtSelect.selectedIndex = i;
