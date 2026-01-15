@@ -1,4 +1,6 @@
 # main.py
+import os
+import shutil
 from fastapi import FastAPI, Request, Depends, HTTPException, UploadFile, File
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import create_engine, Column, Integer, String, Text
