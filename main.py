@@ -42,6 +42,7 @@ class Registration(Base):
     field_5_5 = Column(String, nullable=True)  # Инвестиции
     field_5_6 = Column(String, nullable=True)  # Интернет-мошенничество
     field_5_7 = Column(String, nullable=True)  # Признак мошенничества
+    audio_record = Column(String, nullable=True) # [НОВОЕ] 6. Запись аудио разговора
 
     # --- Вкладка 2: Данные заявителя/ЦОУ ---
     msg_type = Column(String, nullable=True)
