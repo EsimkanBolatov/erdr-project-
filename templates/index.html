@@ -83,10 +83,10 @@
         <div id="tab1" class="tab-content active">
             <div class="form-table">
                 <div class="form-label"><span class="required">*</span>1. Номер КУИ</div>
-                    <div class="input-with-icon">
-                         <input type="text" id="kui_number">
-                         <span class="field-icon" onclick="searchByKui()" style="cursor: pointer;">🔍</span>
-                    </div>
+                <div class="input-with-icon">
+                     <input type="text" id="kui_number">
+                     <span class="field-icon" onclick="searchByKui()" style="cursor: pointer;">🔍</span>
+                </div>
                 <div></div>
                 <div class="form-label"><span class="required">*</span>1. Дата время регистрации</div>
                 <div class="input-with-icon" style="width: 130px;">
@@ -99,7 +99,12 @@
                     <input type="text" id="reg_organ">
                      <span class="field-icon">🔍</span>
                 </div>
-                 <div></div> <div></div> <div></div>
+                 <div></div>
+                <div class="form-label"><span class="required">*</span>1. Дата подтв. оператором</div>
+                <div class="input-with-icon" style="width: 130px;">
+                    <input type="text" id="operator_conf_date" placeholder="ДД.ММ.ГГГГ ЧЧ:ММ">
+                    <span class="field-icon">📅</span>
+                </div>
 
                  <div class="form-label"><span class="required">*</span>3. Район (гарнизон) совершения</div>
                  <div>
@@ -112,7 +117,7 @@
                  </div>
                  <div></div> <div></div> <div></div>
 
-                  <div class="form-label">3.1. Номер в/части</div>
+                 <div class="form-label">3.1. Номер в/части</div>
                  <div><input type="text" id="military_unit"></div> <div></div> <div></div> <div></div>
 
                   <div class="form-label">4. Номер талона о принятии заявления</div>
@@ -159,6 +164,13 @@
              <div class="dropdown-row">
                 <div class="form-label"><span class="required">*</span>5.7. Признак мошенничества:</div>
                  <select id="field_5_7"><option value="Нет">Нет</option></select>
+            </div>
+            <div class="dropdown-row">
+                <div class="form-label"><span class="required">*</span>6. Запись аудио разговора:</div>
+                <div class="input-with-icon" style="flex-grow: 1;">
+                    <input type="text" id="audio_record" placeholder="Прикрепите файл...">
+                    <span class="field-icon">📎</span>
+                </div>
             </div>
         </div>
 
@@ -301,6 +313,8 @@
         document.getElementById('reg_organ').value = data.reg_organ || '';
         document.getElementById('event_description').value = data.event_description || '';
         document.getElementById('reg_date').value = data.reg_date || '';
+        document.getElementById('operator_conf_date').value = data.operator_conf_date || '';
+        document.getElementById('audio_record').value = data.audio_record || '';
 
         // --- Вкладка 1: Дополнительные ---
         document.getElementById('military_unit').value = data.military_unit || '';
