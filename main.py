@@ -25,7 +25,9 @@ class Registration(Base):
     reg_organ = Column(String)
     district = Column(String)
     reg_date = Column(String)
+    operator_conf_date = Column(String, nullable=True)
     event_description = Column(Text)
+
 
     # --- Вкладка 1: Дополнительные поля (которые раньше не работали) ---
     military_unit = Column(String, nullable=True)  # 3.1 Номер в/части
