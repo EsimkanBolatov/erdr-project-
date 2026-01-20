@@ -128,8 +128,7 @@ def receive_data(data: RegistrationSchema, db: Session = Depends(get_db)):
         db.delete(existing)
         db.commit()
 
-    new_reg = Registration(**data.dict())
-    db.add(new_reg)
+    new_reg = Registration(**data.model_dump()) 
     db.commit()
     return {"status": "ok", "id": new_reg.id}
 
