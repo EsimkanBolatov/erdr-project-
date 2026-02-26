@@ -1,6 +1,8 @@
 # main.py
 import os
 import shutil
+import requests  # НОВОЕ: Для HTTP-запросов к стороннему API
+from dotenv import load_dotenv  # НОВОЕ: Для загрузки переменных из .env локально
 from fastapi import FastAPI, Request, Depends, HTTPException, UploadFile, File
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +11,14 @@ from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from pydantic import BaseModel, Field
 from typing import Optional
+
+# --- НОВОЕ: Загрузка переменных окружения ---
+# Читаем файл .env (если он есть локально) до инициализации приложения
+load_dotenv()
+
+# Достаем ссылку на сторонний API. Если её нет, переменная будет None
+EXTERNAL_API_URL = os.getenv("THIRD_PARTY_API_URL")
+
 
 # --- Настройка БД ---
 SQLALCHEMY_DATABASE_URL = "sqlite:///./erdr_database.db"
@@ -129,6 +139,32 @@ def get_db():
 def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+# --- НОВОЕ: Эндпоинт для запроса к стороннему API ---
+@app.get("/api/internal/fetch_from_third_party")
+def fetch_external_data():
+    """Получает данные из сторонней системы через API"""
+    if not EXTERNAL_API_URL:
+        # Если забыли добавить .env локально или Environment Variable на Render
+        raise HTTPException(
+            status_code=500, 
+            detail="Внутренняя ошибка: THIRD_PARTY_API_URL не настроен."
+        )
+    
+    try:
+        # Делаем GET запрос к внешнему API
+        response = requests.get(EXTERNAL_API_URL, timeout=10)
+        
+        # Если вернулась ошибка 4xx или 5xx, перехватываем её
+        response.raise_for_status() 
+        
+        # Возвращаем JSON, полученный от стороннего сайта
+        return response.json()
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Ошибка при обращении к внешнему API: {e}")
+        raise HTTPException(status_code=502, detail="Не удалось получить данные от стороннего сервиса")
+# ---------------------------------------------------
+
 @app.post("/api/external/receive_data")
 def receive_data(data: RegistrationSchema, db: Session = Depends(get_db)):
     existing = db.query(Registration).filter(Registration.kui_number == data.kui_number).first()
@@ -170,7 +206,7 @@ def upload_audio_file(file: UploadFile = File(...)):
 
     return {"info": "File saved", "filename": file.filename, "url": f"/static/audio/{file.filename}"}
 
+
 if __name__ == "__main__":
     import uvicorn
-   
     uvicorn.run(app, host="0.0.0.0", port=8001)
